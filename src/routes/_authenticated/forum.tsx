@@ -38,7 +38,7 @@ function Forum() {
   const { data: user } = useCurrentUser();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", body: "", category: CATEGORIES[0] });
+  const [form, setForm] = useState({ title: "", body: "", category: "University applications" });
 
   const { data: threads } = useQuery({
     queryKey: ["threads"],
@@ -60,7 +60,7 @@ function Forum() {
       toast.error(error.message);
       return;
     }
-    setForm({ title: "", body: "", category: CATEGORIES[0] });
+    setForm({ title: "", body: "", category: "University applications" });
     setOpen(false);
     toast.success("Thread posted");
     queryClient.invalidateQueries({ queryKey: ["threads"] });

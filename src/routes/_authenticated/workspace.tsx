@@ -67,7 +67,7 @@ function Workspace() {
   });
 
   useEffect(() => {
-    if (!activeId && pairs?.length) setActiveId(pairs[0].id);
+    if (!activeId && pairs?.length) setActiveId(pairs[0]!.id);
   }, [pairs, activeId]);
 
   const { data: sessions } = useQuery({
@@ -110,7 +110,10 @@ function Workspace() {
 
   async function acceptPair(id: string) {
     const { error } = await supabase.from("mentorships").update({ status: "active" }).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Mentorship activated");
     queryClient.invalidateQueries({ queryKey: ["workspace-pairs"] });
   }
@@ -121,7 +124,10 @@ function Workspace() {
     const { error } = await supabase
       .from("mentorship_sessions")
       .insert({ ...session, mentorship_id: activeId, created_by: user.id });
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setSession({ title: "", notes: "", duration_minutes: 60 });
     toast.success("Session logged");
     queryClient.invalidateQueries({ queryKey: ["sessions", activeId] });
@@ -133,7 +139,10 @@ function Workspace() {
     const { error } = await supabase
       .from("mentorship_goals")
       .insert({ mentorship_id: activeId, title: goalTitle });
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setGoalTitle("");
     queryClient.invalidateQueries({ queryKey: ["goals", activeId] });
   }
@@ -143,7 +152,10 @@ function Workspace() {
       .from("mentorship_goals")
       .update({ completed: !completed })
       .eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     queryClient.invalidateQueries({ queryKey: ["goals", activeId] });
   }
 
