@@ -17,6 +17,7 @@ import { Route as AuthenticatedForumRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedMatchesRouteImport } from './routes/_authenticated/matches'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedOpportunitiesRouteImport } from './routes/_authenticated/opportunities'
+import { Route as AuthenticatedWorkspaceRouteImport } from './routes/_authenticated/workspace'
 import { Route as AuthenticatedForumThreadIdRouteImport } from './routes/_authenticated/forum.$threadId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,6 +60,11 @@ const AuthenticatedOpportunitiesRoute =
     path: '/opportunities',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedWorkspaceRoute = AuthenticatedWorkspaceRouteImport.update({
+  id: '/workspace',
+  path: '/workspace',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedForumThreadIdRoute =
   AuthenticatedForumThreadIdRouteImport.update({
     id: '/$threadId',
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/matches': typeof AuthenticatedMatchesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
+  '/workspace': typeof AuthenticatedWorkspaceRoute
   '/forum/$threadId': typeof AuthenticatedForumThreadIdRoute
 }
 export interface FileRoutesByTo {
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/matches': typeof AuthenticatedMatchesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
+  '/workspace': typeof AuthenticatedWorkspaceRoute
   '/forum/$threadId': typeof AuthenticatedForumThreadIdRoute
 }
 export interface FileRoutesById {
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/_authenticated/matches': typeof AuthenticatedMatchesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/opportunities': typeof AuthenticatedOpportunitiesRoute
+  '/_authenticated/workspace': typeof AuthenticatedWorkspaceRoute
   '/_authenticated/forum/$threadId': typeof AuthenticatedForumThreadIdRoute
 }
 export interface FileRouteTypes {
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/matches'
     | '/onboarding'
     | '/opportunities'
+    | '/workspace'
     | '/forum/$threadId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/matches'
     | '/onboarding'
     | '/opportunities'
+    | '/workspace'
     | '/forum/$threadId'
   id:
     | '__root__'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/_authenticated/matches'
     | '/_authenticated/onboarding'
     | '/_authenticated/opportunities'
+    | '/_authenticated/workspace'
     | '/_authenticated/forum/$threadId'
   fileRoutesById: FileRoutesById
 }
@@ -196,6 +208,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOpportunitiesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/workspace': {
+      id: '/_authenticated/workspace'
+      path: '/workspace'
+      fullPath: '/workspace'
+      preLoaderRoute: typeof AuthenticatedWorkspaceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/forum/$threadId': {
       id: '/_authenticated/forum/$threadId'
       path: '/$threadId'
@@ -223,6 +242,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMatchesRoute: typeof AuthenticatedMatchesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedOpportunitiesRoute: typeof AuthenticatedOpportunitiesRoute
+  AuthenticatedWorkspaceRoute: typeof AuthenticatedWorkspaceRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -231,6 +251,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMatchesRoute: AuthenticatedMatchesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedOpportunitiesRoute: AuthenticatedOpportunitiesRoute,
+  AuthenticatedWorkspaceRoute: AuthenticatedWorkspaceRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
