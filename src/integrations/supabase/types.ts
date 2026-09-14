@@ -14,16 +14,317 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      mentorship_goals: {
+        Row: {
+          completed: boolean
+          created_at: string
+          id: string
+          mentorship_id: string
+          title: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          mentorship_id: string
+          title: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          mentorship_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentorship_goals_mentorship_id_fkey"
+            columns: ["mentorship_id"]
+            isOneToOne: false
+            referencedRelation: "mentorships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentorship_sessions: {
+        Row: {
+          created_at: string
+          created_by: string
+          duration_minutes: number
+          id: string
+          mentorship_id: string
+          notes: string
+          occurred_at: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          duration_minutes?: number
+          id?: string
+          mentorship_id: string
+          notes?: string
+          occurred_at?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          duration_minutes?: number
+          id?: string
+          mentorship_id?: string
+          notes?: string
+          occurred_at?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentorship_sessions_mentorship_id_fkey"
+            columns: ["mentorship_id"]
+            isOneToOne: false
+            referencedRelation: "mentorships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentorships: {
+        Row: {
+          created_at: string
+          goal: string
+          id: string
+          mentee_id: string
+          mentor_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          goal?: string
+          id?: string
+          mentee_id: string
+          mentor_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          goal?: string
+          id?: string
+          mentee_id?: string
+          mentor_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      opportunities: {
+        Row: {
+          capacity: number
+          created_at: string
+          created_by: string
+          description: string
+          event_date: string
+          host_label: string
+          id: string
+          location: string
+          title: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          created_by: string
+          description?: string
+          event_date: string
+          host_label?: string
+          id?: string
+          location?: string
+          title: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          created_by?: string
+          description?: string
+          event_date?: string
+          host_label?: string
+          id?: string
+          location?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          bio: string
+          city: string
+          contact_email: string | null
+          created_at: string
+          flex_year: string
+          full_name: string
+          goals: string[]
+          host_country: string
+          host_state: string
+          id: string
+          instagram_url: string | null
+          linkedin_url: string | null
+          onboarded: boolean
+          participant_role: string
+        }
+        Insert: {
+          bio?: string
+          city?: string
+          contact_email?: string | null
+          created_at?: string
+          flex_year?: string
+          full_name?: string
+          goals?: string[]
+          host_country?: string
+          host_state?: string
+          id: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          onboarded?: boolean
+          participant_role?: string
+        }
+        Update: {
+          bio?: string
+          city?: string
+          contact_email?: string | null
+          created_at?: string
+          flex_year?: string
+          full_name?: string
+          goals?: string[]
+          host_country?: string
+          host_state?: string
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          onboarded?: boolean
+          participant_role?: string
+        }
+        Relationships: []
+      }
+      replies: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          thread_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          thread_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "replies_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rsvps: {
+        Row: {
+          created_at: string
+          id: string
+          opportunity_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          opportunity_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          opportunity_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvps_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      threads: {
+        Row: {
+          author_id: string
+          body: string
+          category: string
+          created_at: string
+          id: string
+          title: string
+        }
+        Insert: {
+          author_id: string
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          title: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +451,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
