@@ -17,6 +17,7 @@ import { Route as AuthenticatedForumRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedMatchesRouteImport } from './routes/_authenticated/matches'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedOpportunitiesRouteImport } from './routes/_authenticated/opportunities'
+import { Route as AuthenticatedForumThreadIdRouteImport } from './routes/_authenticated/forum.$threadId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,24 +59,32 @@ const AuthenticatedOpportunitiesRoute =
     path: '/opportunities',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedForumThreadIdRoute =
+  AuthenticatedForumThreadIdRouteImport.update({
+    id: '/$threadId',
+    path: '/$threadId',
+    getParentRoute: () => AuthenticatedForumRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/forum': typeof AuthenticatedForumRoute
+  '/forum': typeof AuthenticatedForumRouteWithChildren
   '/matches': typeof AuthenticatedMatchesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
+  '/forum/$threadId': typeof AuthenticatedForumThreadIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/forum': typeof AuthenticatedForumRoute
+  '/forum': typeof AuthenticatedForumRouteWithChildren
   '/matches': typeof AuthenticatedMatchesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
+  '/forum/$threadId': typeof AuthenticatedForumThreadIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -83,10 +92,11 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/forum': typeof AuthenticatedForumRoute
+  '/_authenticated/forum': typeof AuthenticatedForumRouteWithChildren
   '/_authenticated/matches': typeof AuthenticatedMatchesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/opportunities': typeof AuthenticatedOpportunitiesRoute
+  '/_authenticated/forum/$threadId': typeof AuthenticatedForumThreadIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/matches'
     | '/onboarding'
     | '/opportunities'
+    | '/forum/$threadId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/matches'
     | '/onboarding'
     | '/opportunities'
+    | '/forum/$threadId'
   id:
     | '__root__'
     | '/'
@@ -117,6 +129,7 @@ export interface FileRouteTypes {
     | '/_authenticated/matches'
     | '/_authenticated/onboarding'
     | '/_authenticated/opportunities'
+    | '/_authenticated/forum/$threadId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -183,12 +196,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOpportunitiesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/forum/$threadId': {
+      id: '/_authenticated/forum/$threadId'
+      path: '/$threadId'
+      fullPath: '/forum/$threadId'
+      preLoaderRoute: typeof AuthenticatedForumThreadIdRouteImport
+      parentRoute: typeof AuthenticatedForumRoute
+    }
   }
 }
 
+interface AuthenticatedForumRouteChildren {
+  AuthenticatedForumThreadIdRoute: typeof AuthenticatedForumThreadIdRoute
+}
+
+const AuthenticatedForumRouteChildren: AuthenticatedForumRouteChildren = {
+  AuthenticatedForumThreadIdRoute: AuthenticatedForumThreadIdRoute,
+}
+
+const AuthenticatedForumRouteWithChildren =
+  AuthenticatedForumRoute._addFileChildren(AuthenticatedForumRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedForumRoute: typeof AuthenticatedForumRoute
+  AuthenticatedForumRoute: typeof AuthenticatedForumRouteWithChildren
   AuthenticatedMatchesRoute: typeof AuthenticatedMatchesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedOpportunitiesRoute: typeof AuthenticatedOpportunitiesRoute
@@ -196,7 +227,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedForumRoute: AuthenticatedForumRoute,
+  AuthenticatedForumRoute: AuthenticatedForumRouteWithChildren,
   AuthenticatedMatchesRoute: AuthenticatedMatchesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedOpportunitiesRoute: AuthenticatedOpportunitiesRoute,
