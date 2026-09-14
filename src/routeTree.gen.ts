@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedForumRouteImport } from './routes/_authenticated/forum'
 import { Route as AuthenticatedMatchesRouteImport } from './routes/_authenticated/matches'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedOpportunitiesRouteImport } from './routes/_authenticated/opportunities'
@@ -36,6 +37,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedForumRoute = AuthenticatedForumRouteImport.update({
+  id: '/forum',
+  path: '/forum',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMatchesRoute = AuthenticatedMatchesRouteImport.update({
   id: '/matches',
   path: '/matches',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/forum': typeof AuthenticatedForumRoute
   '/matches': typeof AuthenticatedMatchesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/forum': typeof AuthenticatedForumRoute
   '/matches': typeof AuthenticatedMatchesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/opportunities': typeof AuthenticatedOpportunitiesRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/forum': typeof AuthenticatedForumRoute
   '/_authenticated/matches': typeof AuthenticatedMatchesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/opportunities': typeof AuthenticatedOpportunitiesRoute
@@ -82,16 +91,29 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/dashboard' | '/matches' | '/onboarding' | '/opportunities'
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/forum'
+    | '/matches'
+    | '/onboarding'
+    | '/opportunities'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/auth' | '/dashboard' | '/matches' | '/onboarding' | '/opportunities'
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/forum'
+    | '/matches'
+    | '/onboarding'
+    | '/opportunities'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/dashboard'
+    | '/_authenticated/forum'
     | '/_authenticated/matches'
     | '/_authenticated/onboarding'
     | '/_authenticated/opportunities'
@@ -133,6 +155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/forum': {
+      id: '/_authenticated/forum'
+      path: '/forum'
+      fullPath: '/forum'
+      preLoaderRoute: typeof AuthenticatedForumRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/matches': {
       id: '/_authenticated/matches'
       path: '/matches'
@@ -159,6 +188,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedForumRoute: typeof AuthenticatedForumRoute
   AuthenticatedMatchesRoute: typeof AuthenticatedMatchesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedOpportunitiesRoute: typeof AuthenticatedOpportunitiesRoute
@@ -166,6 +196,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedForumRoute: AuthenticatedForumRoute,
   AuthenticatedMatchesRoute: AuthenticatedMatchesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedOpportunitiesRoute: AuthenticatedOpportunitiesRoute,
