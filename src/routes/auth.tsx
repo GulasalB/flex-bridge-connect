@@ -32,6 +32,9 @@ function AuthPage() {
   const handleLinkedInLogin = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'linkedin_oidc',
+    options: {
+      redirectTo: 'http://localhost:8080/',
+    }
   });
 };
 
