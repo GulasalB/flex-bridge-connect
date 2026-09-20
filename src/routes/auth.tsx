@@ -29,6 +29,11 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const handleLinkedInLogin = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'linkedin_oidc',
+  });
+};
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -135,12 +140,23 @@ function AuthPage() {
             {mode === "signup"
               ? "Already have an account? Sign in"
               : "New here? Create an account"}
+
+              
           </button>
+
+          <button
+  onClick={handleLinkedInLogin}
+  className="mt-4 w-full py-2 px-4 bg-[#0a66c2] text-white rounded-lg font-medium hover:bg-[#084e96] transition-colors"
+>
+  Sign in with LinkedIn
+</button>
         </section>
       </main>
     </div>
   );
 }
+
+
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
