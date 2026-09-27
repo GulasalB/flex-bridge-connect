@@ -1,173 +1,213 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { Ambient } from "@/components/AppShell";
+import { useState, useEffect } from 'react';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { supabase } from '@/integrations/supabase/client';
 
-export const Route = createFileRoute("/auth")({
-  ssr: false,
-  head: () => ({
-    meta: [
-      { title: "Sign in — FLEX Bridge" },
-      { name: "description", content: "Sign in or create your FLEX Bridge alumni account." },
-      { property: "og:title", content: "Sign in — FLEX Bridge" },
-      {
-        property: "og:description",
-        content: "Sign in or create your FLEX Bridge alumni account.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+export const Route = createFileRoute('/auth')({
   component: AuthPage,
 });
 
-function AuthPage() {
+export function AuthPage() {
   const navigate = useNavigate();
+  // State for the 3-Step Wizard
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  
+  // Step 1: Auth State
   const [mode, setMode] = useState<"signin" | "signup">("signup");
-  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const handleLinkedInLogin = async () => {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'linkedin_oidc',
-    options: {
-      redirectTo: 'http://localhost:8080/',
-    }
-  });
-};
+
+  // Step 2: FLEX Details State
+  const [flexYear, setFlexYear] = useState("");
+  const [hostState, setHostState] = useState("");
+
+  // Step 3: CV Upload State
+  const [file, setFile] = useState<any>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+        setStep(2);
+      }
     });
-  }, [navigate]);
+  }, []);
 
-  async function submit(e: React.FormEvent) {
+  const handleLinkedInLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: { redirectTo: window.location.origin + '/auth' },
+    });
+  };
+
+  async function handleAuth(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
       if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: fullName },
-          },
-        });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        if (!data.session) {
-          toast.success("Check your email to confirm your account.");
-          return;
+        if (data.user) {
+          setUserId(data.user.id);
+          setStep(2);
         }
-        navigate({ to: "/onboarding", replace: true });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/dashboard", replace: true });
+        if (data.user) {
+          setUserId(data.user.id);
+          setStep(2);
+        }
       }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+    } catch (error: any) {
+      alert(error.message);
     } finally {
       setBusy(false);
     }
   }
 
+  async function handleFlexDetails(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      if (!userId) throw new Error("No user found");
+      
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({ 
+          id: userId, 
+          flex_year: parseInt(flexYear), 
+          host_state: hostState 
+        } as any);
+
+      if (error) throw error;
+      setStep(3);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleCVUpload(e: any) {
+    if (e.target.files && e.target.files[0]) {
+      const uploadedFile = e.target.files[0];
+      setFile(uploadedFile); 
+      setUploading(true);
+
+      try {
+        // TypeScript safety check applied here!
+        if (!userId) throw new Error("User session not found.");
+
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+
+        const { data, error } = await supabase.functions.invoke('parse-resume', {
+          body: formData,
+        });
+
+        if (error) throw error;
+
+        const { error: dbError } = await supabase
+          .from('profiles')
+          .update({
+            education_history: data.education_history,
+            work_experience: data.work_experience
+          } as any)
+          .eq('id', userId); // TypeScript knows this is safe now
+
+        if (dbError) throw dbError;
+
+        navigate({ to: "/dashboard", replace: true });
+        
+      } catch (error) {
+        console.error("Parser Error:", error);
+        alert("Could not parse the document.");
+      } finally {
+        setUploading(false);
+      }
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-background text-foreground font-body">
-      <Ambient />
-      <main className="mx-auto max-w-[26rem] px-4 py-10">
-        <div className="flex items-center gap-2.5 mb-5">
-          <div className="size-8 rounded-lg bg-primary/10 ring-1 ring-primary/20 grid place-items-center">
-            <span className="font-display font-extrabold text-primary text-sm">F</span>
-          </div>
-          <p className="font-display font-bold tracking-tight text-[15px]">FLEX Bridge</p>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          {step === 1 && (mode === "signup" ? "Create your FLEX Bridge account" : "Sign in to FLEX Bridge")}
+          {step === 2 && "FLEX Program Details"}
+          {step === 3 && "Fast-Track Your Profile"}
+        </h2>
+      </div>
 
-        <section className="rise rounded-2xl bg-card/75 backdrop-blur-xl ring-1 ring-black/5 p-4">
-          <p className="font-mono text-[10px] text-muted-foreground tracking-[0.2em]">
-            {mode === "signup" ? "(a) · CREATE ACCOUNT" : "(a) · SIGN IN"}
-          </p>
-          <h1 className="font-display font-extrabold tracking-tight text-[24px] leading-tight mt-2">
-            {mode === "signup" ? "Join the alumni network" : "Welcome back"}
-          </h1>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          
+          {step === 1 && (
+            <>
+              <form className="space-y-6" onSubmit={handleAuth}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email address</label>
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Password</label>
+                  <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                </div>
+                <button type="submit" disabled={busy} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                  {busy ? "Processing..." : (mode === "signup" ? "Sign up" : "Sign in")}
+                </button>
+              </form>
+              <div className="mt-6 text-center">
+                <button onClick={handleLinkedInLogin} className="w-full flex justify-center py-2 px-4 mb-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0a66c2] hover:bg-[#084e96]">
+                  Sign in with LinkedIn
+                </button>
+                <button onClick={() => setMode(mode === "signup" ? "signin" : "signup")} className="text-sm text-blue-600 hover:text-blue-500">
+                  {mode === "signup" ? "Already have an account? Sign in" : "New here? Create an account"}
+                </button>
+              </div>
+            </>
+          )}
 
-          <form onSubmit={submit} className="mt-4 space-y-3">
-            {mode === "signup" && (
-              <Field label="Full name">
-                <input
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full rounded-lg bg-card/70 ring-1 ring-black/10 px-3 py-2.5 text-sm outline-none focus:ring-primary"
-                  placeholder="Amina Karimova"
-                />
-              </Field>
-            )}
-            <Field label="Email">
-              <input
-                required
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg bg-card/70 ring-1 ring-black/10 px-3 py-2.5 text-sm outline-none focus:ring-primary"
-                placeholder="you@example.com"
-              />
-            </Field>
-            <Field label="Password">
-              <input
-                required
-                type="password"
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg bg-card/70 ring-1 ring-black/10 px-3 py-2.5 text-sm outline-none focus:ring-primary"
-                placeholder="••••••••"
-              />
-            </Field>
+          {step === 2 && (
+            <form className="space-y-6" onSubmit={handleFlexDetails}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">FLEX Year (e.g. 2022)</label>
+                <input type="number" required value={flexYear} onChange={(e) => setFlexYear(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Host State (e.g. Texas)</label>
+                <input type="text" required value={hostState} onChange={(e) => setHostState(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+              </div>
+              <button type="submit" disabled={busy} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                {busy ? "Saving..." : "Continue"}
+              </button>
+            </form>
+          )}
 
-            <button
-              disabled={busy}
-              className="w-full rounded-lg bg-primary text-primary-foreground text-sm font-medium py-2.5 disabled:opacity-60"
-            >
-              {busy ? "Working…" : mode === "signup" ? "Create account" : "Sign in"}
-            </button>
-          </form>
-
-          <button
-            onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-            className="mt-3 w-full text-xs text-primary font-medium"
-          >
-            {mode === "signup"
-              ? "Already have an account? Sign in"
-              : "New here? Create an account"}
-
+          {step === 3 && (
+            <div className="space-y-6">
+              <p className="text-sm text-gray-600 text-center mb-4">
+                Upload your CV or Resume to automatically extract your education and work experience (just like LinkedIn).
+              </p>
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <p className="mb-2 text-sm text-blue-600 font-semibold">
+                    {file ? file.name : (uploading ? "Extracting deep CV data..." : "Click to upload Resume/CV (PDF)")}
+                  </p>
+                </div>
+                <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleCVUpload} disabled={uploading} />
+              </label>
               
-          </button>
+              <button onClick={() => navigate({ to: "/dashboard", replace: true })} className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                Skip for now
+              </button>
+            </div>
+          )}
 
-          <button
-  onClick={handleLinkedInLogin}
-  className="mt-4 w-full py-2 px-4 bg-[#0a66c2] text-white rounded-lg font-medium hover:bg-[#084e96] transition-colors"
->
-  Sign in with LinkedIn
-</button>
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
-  );
-}
-
-
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="font-mono text-[9px] tracking-[0.15em] text-muted-foreground">
-        {label.toUpperCase()}
-      </span>
-      <div className="mt-1">{children}</div>
-    </label>
   );
 }
